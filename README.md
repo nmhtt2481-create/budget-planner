@@ -1,32 +1,109 @@
-# React + TypeScript + Vite
+# Планировщик бюджета
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Адаптивный веб-приложение для учёта личных финансов: доходы, расходы, бюджеты по категориям и аналитика — с красивым интерфейсом, светлой/тёмной темой и хранением данных локально в браузере. Есть сборка под Android (Capacitor) и ярлык для запуска на рабочем столе Windows.
 
-Currently, two official plugins are available:
+## Возможности
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+**Дашборд**
+- Баланс за месяц, суммы доходов и расходов с анимированными цифрами
+- Кольцевая диаграмма структуры расходов (donut-chart)
+- Топ категорий по тратам и средний дневной расход
+- Прогресс по каждому бюджету: потрачено / лимит / остаток
+- Быстрый переход к операциям категории из виджетов
 
-## React Compiler
+**Операции (Доходы / Расходы)**
+- Добавление, редактирование и удаление операций
+- Навигация по месяцам, поиск и фильтры по типу/категории
+- Категории с иконками и настраиваемой цветовой палитрой, создание своих
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+**Аналитика**
+- Динамика расходов по дням, статистика по категориям за месяц
+- Сравнение с предыдущим месяцем
+- Топ категорий, средний дневной расход, расходы к доходам
 
-## Expanding the Oxlint configuration
+**Настройки и данные**
+- Тёмная и светлая тема
+- Валюта: ₽, $, €, £
+- Лимиты (бюджеты) на категории
+- Экспорт резервной копии в JSON и импорт
+- Демо-данные для знакомства с приложением, полная очистка данных
+- Все данные хранятся локально (localStorage) — без сервера и без регистрации
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+**Интерфейс**
+- Адаптивная вёрстка: мобильные, планшеты, десктоп (FAB-кнопка на телефонах)
+- Плавные анимации (framer-motion) и тосты-уведомления
+- Сложные графики на recharts (в отдельном "тяжёлом" чанке для скорости загрузки)
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+## Технологии
+
+| Слой | Стек |
+| --- | --- |
+| Фронтенд | React 19, TypeScript, Tailwind CSS 4 |
+| Сборка | Vite 8 (code-splitting: vendor-чанки для графиков, анимаций и иконок) |
+| Графики | recharts, d3 |
+| Тесты | Vitest + React Testing Library (29 тестов) |
+| Линтер | Oxlint |
+| Мобильная оболочка | Capacitor 8 |
+| Хранилище данных | localStorage (переключатель-персистентность) |
+
+## Быстрый старт
+
+```bash
+npm install        # установка зависимостей
+npm run dev        # dev-сервер → http://localhost:5173
+npm run build      # production-сборка в dist/
+npm run preview    # предпросмотр собранной версии
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+## Тесты и линт
+
+```bash
+npm test           # vitest: 29 тестов (store, расчёты, демо-данные, UI)
+npm run lint       # oxlint
+```
+
+## Android (APK)
+
+Проект собран с Capacitor — Android-оболочка лежит в `android/`.
+
+```bash
+npm run build && npx cap sync android
+cd android
+.\gradlew.bat assembleDebug --no-daemon
+# готовый APK: android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+> Для сборки нужен JDK 21 и Android SDK (`ANDROID_HOME`). Из-за кириллицы в пути проекта в `android/gradle.properties` включён `android.overridePathCheck=true`.
+
+Готовый APK последней сборки приложен к релизу (см. блок Release на GitHub).
+
+## Запуск с рабочего стола Windows
+
+Ярлык «Бюджет» на рабочем столе запускает `desktop/launcher.mjs`:
+
+```bash
+node desktop/launcher.mjs     # vite preview → http://127.0.0.1:4173 + открытие браузера
+```
+
+## Иконки
+
+Иконки приложения (символ ₽ на градиенте `#5B5CE2 → #8B7CF6`) генерируются скриптом:
+
+```bash
+node scripts/generate-icons.mjs   # Android mipmap-иконки + desktop .ico/.png/svg
+```
+
+## Структура проекта
+
+```
+src/
+  components/    UI-компоненты (формы, модалки, графики, тосты)
+  pages/         Страницы: Dashboard, Operations, Analytics, Settings
+  store/         Состояние (useReducer + context) + localStorage
+  utils/         Расчёты, демо-данные, форматирование
+  types/         Типы (Transactions, Budget, Category, Settings)
+scripts/         Генератор иконок
+android/         Капсуляция Capacitor (APK)
+desktop/         Лаунчер для запуска с рабочего стола
+build-icons/     Сгенерированные иконки (.ico, .png, .svg)
+```
